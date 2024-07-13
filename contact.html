@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact</title>
+    <style>
+        /* Reset some default browser styles */
+body, h2, p, ul, li {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+/* Style the body */
+body {
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Style the header */
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+/* Style the navigation menu */
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+nav ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Style the profile circle */
+.profile-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.profile-circle img {
+    width: 100%;
+    height: auto;
+}
+
+/* Style the main content */
+main {
+    padding: 20px;
+    text-align: center;
+}
+
+/* Style the contact section */
+.contact-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 20px auto;
+    text-align: left;
+}
+
+.contact-right {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input, textarea {
+    width: 100%;
+    border: none;
+    border-radius: 3px;
+    font-size: small;
+    padding: 10px;
+    background-color: rgb(248, 242, 242);
+    color: rgb(14, 14, 14);
+    outline: none;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.btn {
+    width: 100px;
+    padding: 10px;
+    border: none;
+    color: white;
+    background-color: red;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: white;
+    color: red;
+    border: 1px solid red;
+}
+
+/* Style the message */
+#msg {
+    font-size: small;
+    color: rgb(23, 23, 24);
+    margin-top: 10px;
+}
+
+/* Style the footer */
+footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="profile-circle">
+            <img src="profile-photo.jpeg" alt="Profile Photo">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index1.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="contact-section">
+            <div class="contact-right">
+                <form name="submit-to-google-sheet">
+                    <input type="text" name="Name" placeholder="Your Name" required>
+                    <input type="email" name="Email" placeholder="Enter Email" required>
+                    <textarea name="Message" rows="3" placeholder="Your Message"></textarea>
+                    <button type="submit" class="btn">Submit</button>
+                    <span id="msg"></span>
+                </form>  
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Waste Segregation</p>
+    </footer>
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzt3ErqmKmhRIXD8QNJccR3IJbRL2zTJNq5OJnjbKqAdgT-Yme44dxMSRCvU4jNOB-xBw/exec'
+        const form = document.forms['submit-to-google-sheet']
+        const msg = document.getElementById("msg")
+        form.addEventListener('submit', e => {
+            e.preventDefault()
+            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                .then(response => {
+                    msg.innerHTML = "Message sent successfully"
+                    setTimeout(function(){
+                        msg.innerHTML = ""
+                    }, 5000)
+                    form.reset()
+                    alert("Form will be reset in 5 seconds")
+                })
+                .catch(error => console.error('Error!', error.message))
+        })
+    </script>
+</body>
+</html>

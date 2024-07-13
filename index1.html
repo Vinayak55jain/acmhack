@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waste Segregation</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            text-align: center;
+            margin: 0;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+        .profile-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 15px; /* Adjust spacing between logo and nav */
+        }
+        .profile-circle img {
+            width: 100%;
+            height: auto;
+        }
+        main {
+            padding: 20px;
+            text-align: center;
+        }
+        .upload-section, .result-section {
+            margin: 20px 0;
+        }
+        footer {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 20px;
+            display: inline-block;
+            width: 200px;
+            vertical-align: top;
+            transition: transform 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: scale(1.05); /* Scale up on hover */
+        }
+        .card h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="profile-circle">
+            <img src="profile-photo.jpeg" alt="Profile Photo">
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index1.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="upload-section">
+            <h2>Upload Your Waste Image</h2>
+            <input type="file" id="waste-image" accept="image/*">
+            <button id="upload-btn">Upload</button>
+            <img id="uploaded-image" style="display:none; width: 300px; height: auto;">
+        </section>
+        <section class="result-section">
+            <h2>Waste Type:</h2>
+            <p id="waste-type"></p>
+        </section>
+        <section class="location-section">
+            <div class="card">
+                <h3>Jaggi</h3>
+                <p>Blue Bin Size: <span id="jaggi-blue-bin-size">0</span></p>
+                <p>Green Bin Size: <span id="jaggi-green-bin-size">0</span></p>
+                <p>Red Bin Size: <span id="jaggi-red-bin-size">0</span></p>
+            </div>
+            <div class="card">
+                <h3>COS</h3>
+                <p>Blue Bin Size: <span id="cos-blue-bin-size">0</span></p>
+                <p>Green Bin Size: <span id="cos-green-bin-size">0</span></p>
+                <p>Red Bin Size: <span id="cos-red-bin-size">0</span></p>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Waste Segregation</p>
+    </footer>
+
+    <script>
+        document.getElementById('upload-btn').addEventListener('click', classifyImage);
+        document.getElementById('waste-image').addEventListener('change', displayImage);
+    
+        async function loadModel() {
+            const model = await mobilenet.load();
+            return model;
+        }
+    
+        function displayImage(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            const imgElement = document.getElementById('uploaded-image');
+    
+            reader.onload = function(event) {
+                imgElement.src = event.target.result;
+                imgElement.style.display = 'block';
+            };
+    
+            reader.readAsDataURL(file);
+        }
+    
+        async function classifyImage() {
+            const fileInput = document.getElementById('waste-image');
+            const resultElement = document.getElementById('waste-type');
+    
+            if (!fileInput.files.length) {
+                resultElement.textContent = 'Please upload an image first.';
+                return;
+            }
+    
+            const file = fileInput.files[0];
+            const img = await loadImage(file);
+    
+            const model = await loadModel();
+            const predictions = await model.classify(img);
+    
+            const wasteCategories = {
+                plastic: [
+                    'water bottle', 'plastic bottle', 'plastic mug', 'plastic container', 'plastic bag', 'plastic cup', 'plastic spoon', 'plastic fork', 'plastic plate', 'plastic wrapper', 'plastic straw', 'plastic lid'
+                ],
+                paper: [
+                    'newspaper', 'cardboard', 'paper cup', 'paper bag', 'paper sheet', 'paper plate', 'notebook', 'book', 'paper towel', 'magazine', 'envelope'
+                ],
+                metal: [
+                    'aluminum can', 'metal bottle', 'metal mug', 'metal spoon', 'metal fork', 'metal plate', 'metal container', 'metal lid', 'tin can', 'metal foil', 'metal wire'
+                ],
+                glass: [
+                    'glass bottle', 'glass jar', 'glass cup', 'glass plate', 'glass container', 'glass lid', 'glass fragment', 'glass ornament'
+                ],
+                organic: [
+                    'apple core', 'banana peel', 'orange peel', 'food waste', 'vegetable peel', 'egg shell', 'coffee grounds', 'tea bag'
+                ],
+                e_waste: [
+                    'mobile phone', 'laptop', 'tablet', 'charger', 'headphones', 'remote control', 'battery', 'circuit board'
+                ],
+                textile: [
+                    'clothing', 'fabric', 'towel', 'bed sheet', 'curtain', 'blanket', 'pillow', 'rug'
+                ],
+                hazardous: [
+                    'paint can', 'battery', 'pesticide container', 'chemical bottle', 'fluorescent bulb', 'thermometer', 'syringe', 'medical waste'
+                ]
+            };
+    
+            const prediction = predictions[0];
+            let wasteType = 'Unknown';
+            let wasteCategory = '';
+    
+            for (const [type, items] of Object.entries(wasteCategories)) {
+                if (isInList(prediction.className, items)) {
+                    wasteType = type.charAt(0).toUpperCase() + type.slice(1);
+                    wasteCategory = items.find(item => prediction.className.toLowerCase().includes(item));
+                    break;
+                }
+            }
+    
+            resultElement.textContent = `Predicted Class: ${prediction.className}, Probability: ${prediction.probability.toFixed(2)}`;
+    
+            updateBins(wasteType);
+        }
+    
+        function loadImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const img = new Image();
+                    img.src = reader.result;
+                    img.onload = () => resolve(img);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+    
+        async function updateBins(wasteType) {
+            const location = prompt("Enter location (Jaggi/COS):").toLowerCase();
+            if (location === 'jaggi' || location === 'cos') {
+                const blueBinSizeElement = document.getElementById(`${location}-blue-bin-size`);
+                const greenBinSizeElement = document.getElementById(`${location}-green-bin-size`);
+                const redBinSizeElement = document.getElementById(`${location}-red-bin-size`);
+    
+                const response = await fetch(`http://localhost:3000/bins/${location}`);
+                const binData = await response.json();
+    
+                if (['Plastic', 'Paper', 'Metal', 'Glass'].includes(wasteType)) {
+                    binData.blueBinSize++;
+                } else if (wasteType === 'Organic') {
+                    binData.greenBinSize++;
+                } else {
+                    binData.redBinSize++;
+                }
+    
+                await fetch(`http://localhost:3000/bins/${location}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        blueBinSize: binData.blueBinSize,
+                        greenBinSize: binData.greenBinSize,
+                        redBinSize: binData.redBinSize
+                    })
+                });
+    
+                blueBinSizeElement.textContent = binData.blueBinSize;
+                greenBinSizeElement.textContent = binData.greenBinSize;
+                redBinSizeElement.textContent = binData.redBinSize;
+            } else {
+                alert('Invalid location entered.');
+            }
+        }
+    
+        function isInList(predictedClass, itemList) {
+            return itemList.some(item => predictedClass.toLowerCase().includes(item));
+        }
+    </script>
+</body>
+</html>
